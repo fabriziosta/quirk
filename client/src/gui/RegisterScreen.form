@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="gui.RegisterScreen">
+  <grid id="27dc6" binding="rootRegister" layout-manager="GridLayoutManager" row-count="10" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="70" width="394" height="561"/>
+    </constraints>
+    <properties>
+      <alignmentX value="0.0"/>
+      <alignmentY value="0.0"/>
+      <background color="-7096859"/>
+      <enabled value="true"/>
+      <maximumSize width="-1" height="-1"/>
+      <minimumSize width="-1" height="-1"/>
+      <preferredSize width="-1" height="-1"/>
+      <verifyInputWhenFocusTarget value="true"/>
+      <visible value="true"/>
+    </properties>
+    <border type="none" title="Registration form" title-justification="2" title-position="5">
+      <font size="14"/>
+      <title-color color="-1"/>
+      <color color="-16777216"/>
+    </border>
+    <children>
+      <component id="9e7c9" class="javax.swing.JLabel" binding="imgLogo">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false">
+            <preferred-size width="257" height="170"/>
+          </grid>
+        </constraints>
+        <properties>
+          <alignmentY value="0.0"/>
+          <focusable value="false"/>
+          <horizontalAlignment value="0"/>
+          <horizontalTextPosition value="0"/>
+          <icon value="img/QwirkLogo1.png"/>
+          <iconTextGap value="0"/>
+          <text value=""/>
+          <visible value="true"/>
+        </properties>
+      </component>
+      <component id="85089" class="javax.swing.JLabel" binding="lblEmail">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="2" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <alignmentY value="0.0"/>
+          <foreground color="-1"/>
+          <horizontalAlignment value="2"/>
+          <horizontalTextPosition value="0"/>
+          <text value="Email *"/>
+        </properties>
+      </component>
+      <component id="89a2" class="javax.swing.JTextField" binding="textEmail">
+        <constraints>
+          <grid row="4" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
+            <preferred-size width="180" height="31"/>
+          </grid>
+        </constraints>
+        <properties>
+          <alignmentX value="0.0"/>
+          <alignmentY value="0.0"/>
+          <toolTipText value="Insert here your email"/>
+        </properties>
+      </component>
+      <component id="11715" class="javax.swing.JLabel" binding="lblPassword">
+        <constraints>
+          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="2" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <alignmentY value="0.0"/>
+          <background color="-1"/>
+          <foreground color="-1"/>
+          <horizontalAlignment value="2"/>
+          <horizontalTextPosition value="0"/>
+          <opaque value="false"/>
+          <text value="Password (min. 8 Char.) *"/>
+          <toolTipText value="Password"/>
+        </properties>
+      </component>
+      <component id="5e837" class="javax.swing.JLabel" binding="lblRepeatPassword">
+        <constraints>
+          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="2" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <alignmentY value="0.0"/>
+          <foreground color="-1"/>
+          <horizontalAlignment value="0"/>
+          <text value="Repeat Password *"/>
+        </properties>
+      </component>
+      <component id="6bee8" class="javax.swing.JButton" binding="btnBack">
+        <constraints>
+          <grid row="9" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <foreground color="-16777216"/>
+          <icon value="close.png"/>
+          <text value="Back"/>
+        </properties>
+      </component>
+      <component id="a59d8" class="javax.swing.JPasswordField" binding="textPassword">
+        <constraints>
+          <grid row="5" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
+            <preferred-size width="180" height="31"/>
+          </grid>
+        </constraints>
+        <properties>
+          <alignmentX value="0.0"/>
+          <alignmentY value="0.0"/>
+          <horizontalAlignment value="2"/>
+          <margin top="0" left="0" bottom="0" right="15"/>
+          <maximumSize width="150" height="31"/>
+          <minimumSize width="150" height="31"/>
+          <preferredSize width="150" height="31"/>
+          <text value=""/>
+          <toolTipText value="Insert your personal password here"/>
+        </properties>
+      </component>
+      <component id="42ef" class="javax.swing.JPasswordField" binding="textRepeatPassword">
+        <constraints>
+          <grid row="6" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
+            <preferred-size width="180" height="31"/>
+          </grid>
+        </constraints>
+        <properties>
+          <alignmentX value="0.0"/>
+          <alignmentY value="0.0"/>
+          <background color="-1"/>
+          <toolTipText value="Repeat your password"/>
+        </properties>
+      </component>
+      <component id="1725d" class="javax.swing.JButton" binding="btnConfirm">
+        <constraints>
+          <grid row="9" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <foreground color="-16777216"/>
+          <hideActionText value="false"/>
+          <horizontalAlignment value="2"/>
+          <horizontalTextPosition value="4"/>
+          <icon value="confirm.png"/>
+          <text value="Confirm"/>
+          <toolTipText value="Confirm"/>
+        </properties>
+      </component>
+      <component id="def10" class="javax.swing.JLabel" binding="lblUsername">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="2" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <alignmentY value="0.0"/>
+          <background color="-1"/>
+          <foreground color="-1"/>
+          <horizontalAlignment value="2"/>
+          <horizontalTextPosition value="0"/>
+          <opaque value="false"/>
+          <text value="Username *"/>
+          <toolTipText value="Username"/>
+          <visible value="true"/>
+        </properties>
+      </component>
+      <component id="8bba7" class="javax.swing.JLabel" binding="lblSurname">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="2" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <foreground color="-1"/>
+          <text value="Surname"/>
+        </properties>
+      </component>
+      <component id="8dbc8" class="javax.swing.JTextField" binding="textUsername">
+        <constraints>
+          <grid row="3" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
+            <preferred-size width="180" height="31"/>
+          </grid>
+        </constraints>
+        <properties>
+          <alignmentX value="0.0"/>
+          <alignmentY value="0.0"/>
+          <margin top="0" left="0" bottom="0" right="15"/>
+          <maximumSize width="150" height="31"/>
+          <minimumSize width="150" height="31"/>
+          <preferredSize width="150" height="31"/>
+          <text value=""/>
+          <toolTipText value="Insert here your username"/>
+        </properties>
+      </component>
+      <component id="260b2" class="javax.swing.JLabel" binding="lblName">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="2" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <foreground color="-1"/>
+          <text value="Name"/>
+        </properties>
+      </component>
+      <component id="b1c12" class="javax.swing.JTextField" binding="textSurname">
+        <constraints>
+          <grid row="2" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false">
+            <preferred-size width="180" height="31"/>
+          </grid>
+        </constraints>
+        <properties>
+          <toolTipText value="Insert here your surname"/>
+        </properties>
+      </component>
+      <component id="318cd" class="javax.swing.JTextField" binding="textName">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
+            <preferred-size width="180" height="31"/>
+          </grid>
+        </constraints>
+        <properties>
+          <toolTipText value="Insert here your name"/>
+        </properties>
+      </component>
+      <component id="ef02f" class="javax.swing.JLabel" binding="lblProfilePicture">
+        <constraints>
+          <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <foreground color="-1"/>
+          <horizontalAlignment value="11"/>
+          <horizontalTextPosition value="11"/>
+          <text value="Profile picture *"/>
+        </properties>
+      </component>
+      <component id="cd904" class="javax.swing.JButton" binding="btnBrowse">
+        <constraints>
+          <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <label value="Browse"/>
+          <text value="Browse"/>
+        </properties>
+      </component>
+      <component id="66676" class="javax.swing.JLabel" binding="lblFileLoaded">
+        <constraints>
+          <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <foreground color="-1"/>
+          <text value="FileLoaded"/>
+        </properties>
+      </component>
+      <component id="d6267" class="javax.swing.JLabel" binding="lblFile">
+        <constraints>
+          <grid row="8" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value=""/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>

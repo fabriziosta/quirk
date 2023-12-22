@@ -1,0 +1,10 @@
+Look in DC folders to check details about every IPv6 VMs.
+
+Step by step:
+- Edit /etc/sysconfig/network
+- Edit /etc/sysconfig/network-scripts/ifcfg-ens33
+
+service network restart
+
+- Now ping to see if it’s working:
+ping6 fe80::2:2

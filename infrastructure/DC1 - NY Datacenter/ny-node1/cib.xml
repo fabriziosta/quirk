@@ -1,0 +1,122 @@
+<cib crm_feature_set="3.0.10" validate-with="pacemaker-2.5" epoch="34" num_updates="0" admin_epoch="0" cib-last-written="Tue Apr 11 05:33:33 2017" update-origin="ny-node1" update-client="cibadmin" update-user="root" have-quorum="1">
+  <configuration>
+    <crm_config>
+      <cluster_property_set id="cib-bootstrap-options">
+        <nvpair id="cib-bootstrap-options-have-watchdog" name="have-watchdog" value="false"/>
+        <nvpair id="cib-bootstrap-options-dc-version" name="dc-version" value="1.1.15-11.el7_3.4-e174ec8"/>
+        <nvpair id="cib-bootstrap-options-cluster-infrastructure" name="cluster-infrastructure" value="corosync"/>
+        <nvpair id="cib-bootstrap-options-cluster-name" name="cluster-name" value="AA-cluster"/>
+        <nvpair id="cib-bootstrap-options-stonith-enabled" name="stonith-enabled" value="true"/>
+      </cluster_property_set>
+    </crm_config>
+    <nodes>
+      <node id="1" uname="ny-node1"/>
+      <node id="4" uname="tx-node1"/>
+    </nodes>
+    <resources>
+      <clone id="ClusterIP-clone">
+        <primitive class="ocf" id="ClusterIP" provider="heartbeat" type="IPaddr2">
+          <instance_attributes id="ClusterIP-instance_attributes">
+            <nvpair id="ClusterIP-instance_attributes-ip" name="ip" value="172.17.2.7"/>
+            <nvpair id="ClusterIP-instance_attributes-cidr_netmask" name="cidr_netmask" value="32"/>
+            <nvpair id="ClusterIP-instance_attributes-clusterip_hash" name="clusterip_hash" value="sourceip"/>
+          </instance_attributes>
+          <operations>
+            <op id="ClusterIP-start-interval-0s" interval="0s" name="start" timeout="20s"/>
+            <op id="ClusterIP-stop-interval-0s" interval="0s" name="stop" timeout="20s"/>
+            <op id="ClusterIP-monitor-interval-30s" interval="30s" name="monitor"/>
+          </operations>
+          <meta_attributes id="ClusterIP-meta_attributes"/>
+        </primitive>
+        <meta_attributes id="ClusterIP-clone-meta_attributes">
+          <nvpair id="ClusterIP-clone-meta_attributes-clone-max" name="clone-max" value="2"/>
+          <nvpair id="ClusterIP-clone-meta_attributes-clone-node-max" name="clone-node-max" value="1"/>
+          <nvpair id="ClusterIP-clone-meta_attributes-globally-unique" name="globally-unique" value="true"/>
+        </meta_attributes>
+      </clone>
+      <primitive class="ocf" id="drbd_res" provider="linbit" type="drbd">
+        <instance_attributes id="drbd_res-instance_attributes">
+          <nvpair id="drbd_res-instance_attributes-drbd_resource" name="drbd_resource" value="mariadb-res"/>
+        </instance_attributes>
+        <operations>
+          <op id="drbd_res-start-interval-0s" interval="0s" name="start" timeout="240"/>
+          <op id="drbd_res-promote-interval-0s" interval="0s" name="promote" timeout="90"/>
+          <op id="drbd_res-demote-interval-0s" interval="0s" name="demote" timeout="90"/>
+          <op id="drbd_res-stop-interval-0s" interval="0s" name="stop" timeout="100"/>
+          <op id="drbd_res-monitor-interval-60s" interval="60s" name="monitor"/>
+        </operations>
+        <meta_attributes id="drbd_res-meta_attributes">
+          <nvpair id="drbd_res-meta_attributes-target-role" name="target-role" value="Stopped"/>
+        </meta_attributes>
+      </primitive>
+      <clone id="dlm-clone">
+        <primitive class="ocf" id="dlm" provider="pacemaker" type="controld">
+          <instance_attributes id="dlm-instance_attributes"/>
+          <operations>
+            <op id="dlm-start-interval-0s" interval="0s" name="start" timeout="90"/>
+            <op id="dlm-stop-interval-0s" interval="0s" name="stop" timeout="100"/>
+            <op id="dlm-monitor-interval-60s" interval="60s" name="monitor"/>
+          </operations>
+        </primitive>
+        <meta_attributes id="dlm-clone-meta_attributes">
+          <nvpair id="dlm-clone-meta_attributes-clone-max" name="clone-max" value="2"/>
+          <nvpair id="dlm-clone-meta_attributes-clone-node-max" name="clone-node-max" value="1"/>
+          <nvpair id="dlm-clone-meta_attributes-target-role" name="target-role" value="Stopped"/>
+        </meta_attributes>
+      </clone>
+      <clone id="mariadb-res-clone">
+        <primitive class="ocf" id="mariadb-res" provider="heartbeat" type="mysql">
+          <instance_attributes id="mariadb-res-instance_attributes">
+            <nvpair id="mariadb-res-instance_attributes-config" name="config" value="/etc/my.cnf"/>
+            <nvpair id="mariadb-res-instance_attributes-datadir" name="datadir" value="/var/lib/mysql"/>
+            <nvpair id="mariadb-res-instance_attributes-pid" name="pid" value="/var/run/mariadb/mariadb.pid"/>
+            <nvpair id="mariadb-res-instance_attributes-socket" name="socket" value="/var/lib/mysql/mysql.sock"/>
+            <nvpair id="mariadb-res-instance_attributes-additional_parameters" name="additional_parameters" value="--bind-address=0.0.0.0"/>
+          </instance_attributes>
+          <operations>
+            <op id="mariadb-res-promote-interval-0s" interval="0s" name="promote" timeout="120"/>
+            <op id="mariadb-res-demote-interval-0s" interval="0s" name="demote" timeout="120"/>
+            <op id="mariadb-res-start-interval-0s" interval="0s" name="start" timeout="60s"/>
+            <op id="mariadb-res-stop-interval-0s" interval="0s" name="stop" timeout="60s"/>
+            <op id="mariadb-res-monitor-interval-20s" interval="20s" name="monitor" on-fail="standby" timeout="30s"/>
+          </operations>
+        </primitive>
+        <meta_attributes id="mariadb-res-clone-meta_attributes">
+          <nvpair id="mariadb-res-clone-meta_attributes-clone-max" name="clone-max" value="2"/>
+          <nvpair id="mariadb-res-clone-meta_attributes-clone-node-max" name="clone-node-max" value="1"/>
+        </meta_attributes>
+      </clone>
+      <clone id="sqlFS-clone">
+        <primitive class="ocf" id="sqlFS" provider="heartbeat" type="Filesystem">
+          <instance_attributes id="sqlFS-instance_attributes">
+            <nvpair id="sqlFS-instance_attributes-device" name="device" value="/dev/drbd1"/>
+            <nvpair id="sqlFS-instance_attributes-directory" name="directory" value="/var/lib/mysql"/>
+            <nvpair id="sqlFS-instance_attributes-fstype" name="fstype" value="gfs2"/>
+          </instance_attributes>
+          <operations>
+            <op id="sqlFS-start-interval-0s" interval="0s" name="start" timeout="60"/>
+            <op id="sqlFS-stop-interval-0s" interval="0s" name="stop" timeout="60"/>
+            <op id="sqlFS-monitor-interval-20" interval="20" name="monitor" timeout="40"/>
+          </operations>
+        </primitive>
+        <meta_attributes id="sqlFS-clone-meta_attributes"/>
+      </clone>
+      <primitive class="stonith" id="ipmi-fencing" type="fence_ipmilan">
+        <instance_attributes id="ipmi-fencing-instance_attributes">
+          <nvpair id="ipmi-fencing-instance_attributes-pcmk_host_list" name="pcmk_host_list" value="ny-node1 tx-node1"/>
+          <nvpair id="ipmi-fencing-instance_attributes-ipaddr" name="ipaddr" value="172.17.2.8"/>
+          <nvpair id="ipmi-fencing-instance_attributes-login" name="login" value="testuser"/>
+          <nvpair id="ipmi-fencing-instance_attributes-passwd" name="passwd" value="acd123"/>
+        </instance_attributes>
+        <operations>
+          <op id="ipmi-fencing-monitor-interval-60s" interval="60s" name="monitor"/>
+        </operations>
+      </primitive>
+    </resources>
+    <constraints>
+      <rsc_location id="location-ClusterIP-clone-ny-node1-100" node="ny-node1" rsc="ClusterIP-clone" score="100"/>
+      <rsc_location id="location-ClusterIP-clone-tx-node1-99" node="tx-node1" rsc="ClusterIP-clone" score="99"/>
+      <rsc_location id="location-ClusterIP-clone-to-frontend-1" node="to-frontend" rsc="ClusterIP-clone" score="1"/>
+    </constraints>
+  </configuration>
+</cib>

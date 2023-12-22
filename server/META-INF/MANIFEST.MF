@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Class-Path: /Qwirk/lib/mariadb-java-client-1.5.9.jar /Qwirk/lib/javax.
+ mail-1.4.4.jar /Qwirk/lib/activation.jar
+Main-Class: listener.Server
+

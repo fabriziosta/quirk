@@ -1,0 +1,10 @@
+1050 - Send strings to the server AND receive string from server.
+
+1060 - Send File to the server
+1061 - Send a string and receive last insert ID from table FILE. 
+1070 - Receive file from server or another client. Send a command.
+
+1080 - Send audio call request to another client
+1090 - Start audio call between two clients
+1100 - Send video call request to another client
+1110 - Start video call between two clients

@@ -1,0 +1,40 @@
+Credentials for every VMs:
+user: root 		password: supinfo
+mariadb_user: root 	mariadb_pass: supinfo
+HA_user: hacluster 	HA_pass: supinfoha
+
+General Information for every VMs:
+vg name: vg_supinfo	drbd: vg_supinfo/lv_drbd - DRBD disk volume: 1GB
+ram: 512MB - proc: 1 - disk: 10GB (6144mb to /)
+NIC: ens32(NAT) - ens33(Host-only as VLans)
+
+Active/Passive Cluster Name: AP-cluster
+Active/Passive Cluster: ny-frontend, tx-frontend
+Active/Passive IP: 172.17.2.6
+
+Active/Active Cluster Name: AA-cluster
+Active/Active Cluster: ny-node1, tx-node1
+Active/Active IP: 172.17.2.7
+*************************************************
+		--- NewYorkDC ---
+hostname: ny-frontend
+ens32= IPv4: 192.168.137.2
+ens33= (IPv4: 172.17.2.2 - GW: 172.17.0.1) - (IPv6: fe80::2:2 - GW: fe80::1)
+
+hostname: ny-node1
+ens32= 192.168.137.3
+ens33= (IPv4: 172.17.2.3 - GW: 172.17.2.2) - (IPv6: fe80::2:3 - GW: fe80::2:2)
+*************************************************
+		--- DallasDC ---
+hostname: tx-frontend
+ens32= 192.168.137.4
+ens33= (IPv4: 172.17.3.2 - GW: 172.17.0.1) - (IPv6: fe80::3:2 - GW: fe80::1)
+
+hostname: tx-node1
+ens32= 192.168.137.5
+ens33= (IPv4: 172.17.3.3 - GW: 172.17.3.2) - (IPv6: fe80::3:3 - GW: fe80::3:2)
+*************************************************
+		--- TorontoDC ---
+hostname: to-frontend
+ens32= 192.168.137.6
+ens33= (IPv4: 172.17.4.2 - GW: 172.17.0.1) - (IPv6: fe80::4:2 - GW: fe80::1)

@@ -1,0 +1,105 @@
+Description: I am going to set up IPsec host-to-host for the 2 frontend nodes and after that,
+I will set up the connections between the Vlans behind the datacenters.
+
+Procedure step by step:
+
+On all nodes:
+	yum install -y libreswan (this is the IPsec implementation for centos7)
+	echo 1 > /proc/sys/net/ipv4/ip_forward
+
+--- *** --- *** PART 1 *** --- *** ---
+- Generate two 128 bit keys for AH hmac-md5 encryption(on ny-frontend):
+dd if=/dev/urandom count=1 bs=16 2>/dev/null | xxd -p 4e331c97f663cd11e4f9885995020588
+dd if=/dev/urandom count=1 bs=16 2>/dev/null | xxd -p a9e6d3bf3bc69d7ed89dc88b97b0e669
+
+- Generate two 192 bit keys for ESP 3des-cbc encryption(on ny-frontend):
+dd if=/dev/urandom count=1 bs=24 2>/dev/null | xxd -p cca621f764a640fb8efaa7527df2fdb6ad7163eb99dd299f
+dd if=/dev/urandom count=1 bs=24 2>/dev/null | xxd -p 5f6cf7dabd5a5f7704a98979ee9511f8af3e02436960cb06
+
+- Add IPSec static keys on the hosts. Edit /etc/ipsec-tools.conf(on both machines):
+#AH SA's
+add 172.17.2.2 172.17.3.2 ah 0x200 -A hmac-md5 0x4e331c97f663cd11e4f9885995020588;
+add 172.17.3.2 172.17.2.2 ah 0x300 -A hmac-md5 0xa9e6d3bf3bc69d7ed89dc88b97b0e669;
+
+#ESP SA's
+add 172.17.2.2 172.17.3.2 esp 0x201 -E 3des-cbc 0xcca621f764a640fb8efaa7527df2fdb6ad7163eb99dd299f;
+add 172.17.3.2 172.17.2.2 esp 0x301 -E 3des-cbc 0x5f6cf7dabd5a5f7704a98979ee9511f8af3e02436960cb06;
+
+- Add SECURITY POLICIES requiring all traffic (incoming and outgoing) to be encapsulated by IPSec.
+- Edit /etc/ipsec-tools.conf(On ny-frontend):
+spdadd 172.17.2.2 172.17.3.2 any -P out ipsec
+	esp/transport//require
+	ah/transport//require;
+spdadd 172.17.3.2 172.17.2.2 any -P in ipsec
+	esp/transport//require
+	ah/transport//require;
+
+- Edit /etc/ipsec-tools.conf(On tx-frontend):
+spdadd 172.17.2.2 172.17.3.2 any -P in ipsec
+	esp/transport//require
+	ah/transport//require;
+spdadd 172.17.3.2 172.17.2.2 any -P out ipsec
+	esp/transport//require
+	ah/transport//require;
+
+- Restart process and ping to check if VPN is working(on both nodes):
+/etc/init.d/setkey restart
+ping -c3 172.17.2.2 || ping -c3 172.17.3.2
+
+--- *** --- *** PART 2 *** --- *** ---
+Enable communications between all nodes in those Vlans.
+- Edit /etc/ipsec-tools.conf as follows. On ny-frontend:
+spdadd 172.17.2.0/24 172.17.3.0/24 any -P out ipsec
+	esp/tunnel/192.168.137.2-192.168.137.4/require;
+spdadd 172.17.2.0/24 172.17.1.0/24 any -P in ipsec
+	esp/tunnel/192.168.137.4-192.168.137.2/require;
+
+- Edit /etc/ipsec-tools.conf as follows. On tx-frontend:
+spdadd 172.17.2.0/24 172.17.1.0/24 any -P out ipsec
+	esp/tunnel/192.168.137.4-192.168.137.2/require;
+spdadd 172.17.1.0/24 172.17.2.0/24 any -P in ipsec
+	esp/tunnel/192.168.137.2-192.168.137.4/require;
+
+- Restart on both nodes:
+/etc/init.d/setkey restart
+
+--- *** --- *** PART 3 *** --- *** ---
+Enable communication between ny-node1 and to-frontend.
+- Install IPsec on to-frontend.
+- Generate static keys for to-frontend and ny-node1:
+- Generate two 128 bit keys for AH hmac-md5 encryption(on ny-node1):
+dd if=/dev/urandom count=1 bs=16 2>/dev/null | xxd -p d41d8cd98f00b204e9800998ecf8427e
+dd if=/dev/urandom count=1 bs=16 2>/dev/null | xxd -p 189342e2ed9d23bb9a02ecbf8ed06762
+
+- Generate two 192 bit keys for ESP 3des-cbc encryption(on ny-node1):
+dd if=/dev/urandom count=1 bs=24 2>/dev/null | xxd -p cca621f764a640fb8efaa7527df2fdb6ad7163eb99dd299f
+dd if=/dev/urandom count=1 bs=24 2>/dev/null | xxd -p 5f6cf7dabd5a5f7704a98979ee9511f8af3e02436960cb06
+
+- Add IPSec static keys on the hosts. Edit /etc/ipsec-tools.conf(on both machines, ny-node1 and to-frontend):
+#AH SA's
+add 172.17.2.3 172.17.4.2 ah 0x200 -A hmac-md5 0xd41d8cd98f00b204e9800998ecf8427e;
+add 172.17.4.2 172.17.2.3 ah 0x300 -A hmac-md5 0x189342e2ed9d23bb9a02ecbf8ed06762;
+#ESP SA's
+add 172.17.2.3 172.17.4.2 esp 0x201 -E 3des-cbc 0xcca621f764a640fb8efaa7527df2fdb6ad7163eb99dd299f;
+add 172.17.4.2 172.17.2.3 esp 0x301 -E 3des-cbc 0x5f6cf7dabd5a5f7704a98979ee9511f8af3e02436960cb06;
+
+- Add SECURITY POLICIES requiring all traffic (incoming and outgoing) to be encapsulated by IPSec.
+- Edit /etc/ipsec-tools.conf(On ny-node1):
+spdadd 172.17.2.3 172.17.4.2 any -P out ipsec
+	esp/transport//require
+	ah/transport//require;
+spdadd 172.17.4.2 172.17.2.3 any -P in ipsec
+	esp/transport//require
+	ah/transport//require;
+
+- Edit /etc/ipsec-tools.conf(On to-frontend):
+spdadd 172.17.2.3 172.17.4.2 any -P in ipsec
+	esp/transport//require
+	ah/transport//require;
+spdadd 172.17.4.2 172.17.2.3 any -P out ipsec
+	esp/transport//require
+	ah/transport//require;
+
+- Restart process and ping to check if VPN is working(on both nodes):
+/etc/init.d/setkey restart
+ping -c3 172.17.2.3 || ping -c3 172.17.4.2

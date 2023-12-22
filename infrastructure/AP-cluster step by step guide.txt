@@ -1,0 +1,45 @@
+- Update the system:
+yum update
+
+- Install pacemaker:
+yum install -y pacemaker pcs psmisc policycoreutils-python
+
+- Add HA service in the firewall permanently:
+firewall-cmd --permanent --add-service=high-availability
+firewall-cmd --reload
+
+- Enable pcsd service:
+systemctl start pcsd.service
+systemctl enable pcsd.service
+
+- Change password for every node and set the same for everyone(check VMinformation.txt for more details):
+passwd hacluster
+
+- Auth cluster node and start cluster:
+pcs cluster auth ny-frontend tx-frontend 
+pcs cluster setup --name AP-cluster ny-frontend tx-frontend 
+pcs cluster start --all
+
+- Enable pacemaker at start up:
+systemctl enable corosync.service
+systemctl enable pacemaker.service
+
+- Create VIP (Virtual IP) for the cluster:
+pcs resource create ClusterIP ocf:heartbeat:IPaddr2 ip=172.17.2.6 cidr_netmask=32 op monitor interval=30s
+
+- Set ny-frontend as preferred node:
+pcs constraint location ClusterIP prefers ny-frontend=100
+
+- Create and add qwirkd.service (check "Create qwirkd.service.txt" for more details!)
+
+-------------------------
+CONFIGURE STONITH (fence_ipmilan?)
+yum install -y fence-agents-all
+##pcs stonith list
+##pcs stonith describe fence_ipmilan
+pcs cluster cib stonith_cfg
+pcs -f stonith_cfg stonith create ipmi-fencing fence_ipmilan pcmk_host_list="ny-node1 tx-node1" ipaddr=172.17.2.9 login=testuser passwd=acd123 op monitor interval=60s
+pcs -f stonith_cfg stonith
+pcs -f stonith_cfg property set stonith-enabled=true
+pcs -f stonith_cfg property
+pcs cluster cib-push stonith_cfg

@@ -1,0 +1,16 @@
+127.0.0.1 localhost.localdomain localhost
+::1 localhost6.localdomain6 localhost6
+
+#IPv4
+172.17.2.2 ny-frontend
+172.17.2.3 ny-node1
+172.17.3.2 tx-frontend
+172.17.3.3 tx-node1
+172.17.4.2 to-frontend
+
+#IPv6
+fe80::2:2 ny-frontend
+fe80::2:3 ny-node1
+fe80::3:2 tx-frontend
+fe80::3:3 tx-node1
+fe80::4:2 to-frontend

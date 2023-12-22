@@ -1,0 +1,45 @@
+mkdir /root/scripts
+
+- Put QwirkServer from windows to linux vm:
+pscp.exe C:\Users\Fabrizio\Desktop\QwirkServer.jar root@192.168.0.50:/root/scripts/
+
+- Create qwirk.sh and write on it:
+cat <<-END >/root/scripts/qwirk.sh
+#!/bin/bash
+java -jar /root/scripts/QwirkServer.jar
+END
+
+chmod 777 /root/scripts/qwirk.sh
+
+cat <<-END >/etc/systemd/system/qwirkd.service
+[Unit]
+Description=Qwirk Server script
+
+[Service]
+Type=simple
+ExecStart=/root/scripts/qwirk.sh
+
+[Install]
+WantedBy=multi-user.target
+END
+
+chmod 664 /etc/systemd/system/qwirkd.service
+systemctl daemon-reload
+systemctl start qwirkd
+
+- Add as a pacemaker resource:
+#I've tried many times and many different ways to add qwirkd as a 
+#pacemaker resource, but when I execute this command:
+pcs resource create Qwirk systemd:heartbeat:qwirkd
+#it says: "Error: Unable to create resource 'systemd:heartbeat:qwirkd', 
+#it is not installed on this system (use --force to override)"
+#I've tried to force it too, but without any success. The service is 
+#active and running on the system, for this reason I've decided to 
+#manage it through the system and avoiding to give it in pacemaker's 
+#hands. Maybe because I don't have a resource agent in #/usr/lib/ocf/resource.d
+
+I am going to enable it for the system:
+systemctl enable qwirkd
+
+To read output from the stdout jsut type:
+journalctl -u qwirkd

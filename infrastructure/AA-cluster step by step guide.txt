@@ -1,0 +1,152 @@
+- Update the system:
+yum update
+
+- Install pacemaker:
+yum install -y pacemaker pcs psmisc policycoreutils-python
+
+- Add HA service in the firewall permanently:
+firewall-cmd --permanent --add-service=high-availability
+firewall-cmd --reload
+
+- Enable pcsd service:
+systemctl start pcsd.service
+systemctl enable pcsd.service
+
+- Change password for every node and set the same for everyone(check VMinformation.txt for more details):
+passwd hacluster
+
+- Auth cluster node and start cluster:
+pcs cluster auth ny-node1 tx-node1
+pcs cluster setup --name AA-cluster ny-node1 tx-node1
+pcs cluster start --all
+
+- Enable pacemaker at start up:
+systemctl enable corosync.service
+systemctl enable pacemaker.service
+
+- Create VIP for AA-cluster:
+pcs resource create ClusterIP ocf:heartbeat:IPaddr2 ip=172.17.2.7 cidr_netmask=32 op monitor interval=30s
+
+- Install mariadb (only for AA-cluster nodes obviously):
+yum install -y mariadb-server mariadb-libs mariadb
+
+- Create default mariadb folder:
+systemctl start mariadb.service && systemctl stop mariadb.service
+
+- Add a voice in the firewall for mariadb:
+firewall-cmd --permanent --add-service=mysql
+firewall-cmd --reload
+
+- Create mariadb-res resource:
+pcs resource create mariadb-res ocf:heartbeat:mysql config="/etc/my.cnf" datadir="/var/lib/mysql" pid="/var/run/mariadb/mariadb.pid" socket="/var/lib/mysql/mysql.sock" additional_parameters="--bind-address=0.0.0.0" op start timeout=60s op stop timeout=60s op monitor interval=20s timeout=30s on-fail=standby
+
+- Install DRBD
+- Add DRBD voice in the firewall
+
+- Create a logical volume for DRBD (on each node of the cluster):
+lvcreate --name lv_drbd --size 1G vg_supinfo
+
+- Configure DRBD to sync mariadb-res (file sup-storage.res, in ny-node1, tx-node1 and to-frontend). 
+Exec this command on each node:
+cat <<END >/etc/drbd.d/sup-storage.res
+resource mariadb-res{
+  protocol C;
+  meta-disk internal;
+  device /dev/drbd1;
+  syncer {
+    verify-alg sha1;
+  }
+  net{
+    allow-two-primaries;
+  }
+  on ny-node1{
+    disk       /dev/vg_supinfo/lv_drbd;
+    address    172.17.2.3:7789;
+  }
+  on tx-node1{
+    disk      /dev/vg_supinfo/lv_drbd;
+    address   172.17.3.3:7789;
+  }
+}
+resource mariadb-res-U {
+  protocol A;
+
+  stacked-on-top-of mariadb-res{
+    device     /dev/drbd10;
+    address    172.17.2.7:7789; #Virtual IP of AA-cluster
+  }
+  on to-frontend{
+    device     /dev/drbd10;
+    disk       /dev/vg_supinfo/lv_drbd;
+    address    172.17.4.2:7789; #Public IP of the backup node
+    meta-disk  internal;
+  }
+}
+END
+-----------------------------------------
+- Create lower-level DRBD resource and stacked resource for backup node: 
+modprobe drbd (all)
+drbdadm create-md mariadb-res (execute one time on primary and secondary node on lower-level resource)
+drbdadm up mariadb-res (execute one time on primary and secondary node on lower-level resource)
+drbdadm primary --force mariadb-res (only on primary node, ny-node1)
+drbdadm create-md --stacked mariadb-res-U (on ny-node1)
+drbdadm up --stacked mariadb-res-U (on ny-node1)
+drbdadm --force primary --stacked mariadb-res-U (on ny-node1)
+drbdadm create-md mariadb-res-U (on to-frontend)
+drbdadm up mariadb-res-U (on to-frontend)
+
+- Configure pacemaker to manage stacked DRBD and clone it in the other node:
+pcs -f drbd_cfg2 resource create drbd_res ocf:linbit:drbd drbd_resource=mariadb-res op monitor interval=60s
+pcs -f drbd_cfg2 resource create drbd_res-U ocf:linbit:drbd drbd_resource=mariadb-res-U op monitor interval=60s
+pcs -f drbd_cfg2 resource master drbd_resClone drbd_res master-max=1 master-node-max=1 clone-max=2 clone-node-max=1 notify=true globally-unique="false"
+pcs -f drbd_cfg2 resource master drbd_res-UClone drbd_res-U master-max=1 master-node-max=1 clone-max=1 clone-node-max=1 notify=true globally-unique="false"
+
+pcs -f drbd_cfg2 constraint colocation add drbd_res-UClone with drbd_resClone INFINITY
+#pcs -f drbd_cfg2 constraint colocation add drbd_res-UClone with ClusterIP INFINITY
+#pcs -f drbd_cfg2 constraint colocation add ClusterIP with drbd_resClone INFINITY
+#pcs -f drbd_cfg2 constraint order ClusterIP then drbd_res-UClone
+pcs -f drbd_cfg2 constraint order drbd_resClone then drbd_res-UClone
+pcs -f drbd_cfg2 resource show
+pcs cluster cib-push drbd_cfg2
+
+- Enable auto-loading of DRBD module:
+echo drbd >/etc/modules-load.d/drbd.conf
+------------------------------------------------------------------------------------
+- Clone ClusterIP for every node (VIP was created previously as first resource):
+pcs resource clone ClusterIP clone-max=2 clone-node-max=1 globally-unique=true
+
+- Clone mariadb-res:
+pcs resource clone mariadb-res clone-max=2 clone-node-max=1
+
+- Create DLM resource:
+pcs resource create dlm ocf:pacemaker:controld op monitor interval=60s
+pcs resource clone dlm clone-max=2 clone-node-max=1
+
+- Create GFS2 Filesystem for drbd device. It is needed for Active/Active clusters:
+mkfs.gfs2 -p lock_dlm -j 2 -t AA-Cluster:gfs2 /dev/drbd1
+
+- Create FS resource:
+pcs cluster cib fs-cfg
+pcs -f fs-cfg resource create sqlFS Filesystem device="/dev/drbd1" directory="/var/lib/mysql" fstype="gfs2"
+pcs -f fs-cfg constraint colocation add sqlFS with sql_dataClone INFINITY with-rsc-role=Master
+##pcs -f fs-cfg constraint order promote sql_dataClone then start sqlFS
+##pcs -f fs-cfg constraint colocation add mariadb-res with sqlFS INFINITY
+##pcs -f fs-cfg constraint order sqlFS then mariadb-res
+pcs cluster cib-push fs-cfg
+
+- Clone sqlFS:
+pcs resource clone sqlFS
+------------------------------------------------------------------------------------
+- Creare, attivare e configurare STONITH:
+yum install -y fence-agents-all
+pcs stonith list
+pcs stonith describe fence_ipmilan
+pcs cluster cib stonith_cfg
+pcs -f stonith_cfg stonith create ipmi-fencing fence_ipmilan pcmk_host_list="ny-node1 tx-node1" ipaddr=172.17.2.8 login=testuser passwd=acd123 op monitor interval=60s
+pcs -f stonith_cfg stonith
+pcs -f stonith_cfg property set stonith-enabled=true
+pcs -f stonith_cfg property
+pcs cluster cib-push stonith_cfg
+------------------------------------------------------------------------------------
+
+

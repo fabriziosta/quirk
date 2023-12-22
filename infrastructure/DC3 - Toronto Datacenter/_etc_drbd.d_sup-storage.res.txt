@@ -1,0 +1,33 @@
+resource mariadb-res{
+  protocol C;
+  meta-disk internal;
+  device /dev/drbd1;
+  syncer {
+    verify-alg sha1;
+  }
+  net{
+    allow-two-primaries;
+  }
+  on ny-node1{
+    disk       /dev/vg_supinfo/lv_drbd;
+    address    172.17.2.3:7789;
+  }
+  on tx-node1{
+    disk      /dev/vg_supinfo/lv_drbd;
+    address   172.17.3.3:7789;
+  }
+}
+resource mariadb-res-U {
+  protocol A;
+
+  stacked-on-top-of mariadb-res{
+    device     /dev/drbd10;
+    address    172.17.2.7:7789; #Virtual IP of AA-cluster
+  }
+  on to-frontend{
+    device     /dev/drbd10;
+    disk       /dev/vg_supinfo/lv_drbd;
+    address    172.17.4.2:7789; #Public IP of the backup node
+    meta-disk  internal;
+  }
+}
